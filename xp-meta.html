@@ -1,0 +1,164 @@
+<!--
+@license
+Copyright (c) 2015 The expand.js authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+This component is used to create data structures on the fly.
+
+@component xp-meta
+@description This component is used to create data structures on the fly.
+
+@dependency polymer Polymer/polymer#^0.5
+@dependency expandjs ExpandJS/expandjs
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+
+<polymer-element name="xp-meta" constructor="XPMetaElement" attributes="data instance name refers type">
+
+    <template>
+        <style>
+            :host {
+                display: none !important;
+            }
+        </style>
+        <content id="content"></content>
+    </template>
+
+    <script>
+        XPComponent({
+
+            /**
+             * Returns a meta instance.
+             *
+             * @method findInstance
+             * @param {string} [name = ""]
+             * @param {string} [type = "default"]
+             * @returns {Element}
+             */
+            findInstance: function (name, type) {
+                XP.assertArgument(XP.isVoid(name) || XP.isString(name), 1, 'string');
+                XP.assertArgument(XP.isVoid(type) || XP.isString(type), 2, 'string');
+                return (name && XP.find(this.instances[type || 'default'] || [], function (instance) { return name === instance.name; })) || null;
+            },
+
+            /*********************************************************************/
+
+            /**
+             * Parses the properties.
+             *
+             * @method initialize
+             * @returns {Element}
+             * @private
+             */
+            parse: function () {
+
+                // Vars
+                var self       = this,
+                    properties = self.name ? XP.getDistributedElements(self.$.content, 'property[name]:not([name=""])') : null,
+                    data       = self.data = properties ? {} : self.data;
+
+                // Parsing
+                XP.forEach(properties || [], function (property) { data[property.getAttribute('name')] = XP.toValue(property.getAttribute('value')); });
+
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // COMPUTED
+            computed: {
+                'instance': '(!name && findInstance(refers, type)) || null'
+            },
+
+            // OBSERVE
+            observe: {
+                'instance.data': 'dataObserver'
+            },
+
+            // PUBLISH
+            publish: {
+
+                /**
+                 * The element's data.
+                 *
+                 * @attribute data
+                 * @type *
+                 */
+                data: {reflect: false, value: null},
+
+                /**
+                 * The singleton's name.
+                 *
+                 * @attribute name
+                 * @type string
+                 * @default ""
+                 */
+                name: {reflect: true, value: ''},
+
+                /**
+                 * The referred instance's name.
+                 *
+                 * @attribute refers
+                 * @type string
+                 * @default ""
+                 */
+                refers: {reflect: true, value: ''},
+
+                /**
+                 * The singleton's type, aka namespace.
+                 *
+                 * @attribute type
+                 * @type string
+                 * @default "default"
+                 */
+                type: {reflect: true, value: 'default'}
+            },
+
+            /**
+             * The referred instance.
+             *
+             * @property instance
+             * @type Element
+             */
+            instance: {reflect: false, value: null},
+
+            /**
+             * The list of instances.
+             *
+             * @property instances
+             * @type Object
+             * @default {default: []}
+             * @readonly
+             */
+            instances: {'default': []},
+
+            /*********************************************************************/
+
+            // OBSERVER
+            dataObserver: function () {
+                this.data = (this.instance && this.instance.data) || null;
+            },
+
+            // OBSERVER
+            nameChanged: function (pre, post) {
+                var self = this;
+                self.instances[self.type] = self.instances[self.type] || [];
+                XP[post ? 'append' : 'pull'](self.instances[self.type], self);
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            ready: function () {
+                XP.delay(this.parse.bind(this));
+            }
+        });
+    </script>
+
+</polymer-element>
