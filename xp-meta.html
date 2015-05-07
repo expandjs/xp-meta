@@ -157,7 +157,7 @@ This element is used to create data structures on the fly.
 
             // LISTENER
             ready: function () {
-                XP.requestAnimationFrame(this.parse.bind(this));
+                XP.delay(this.parse.bind(this));
             }
         });
     </script>
