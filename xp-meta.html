@@ -96,11 +96,14 @@ This element is used to create data structures on the fly.
                  * The element's data.
                  *
                  * @attribute data
-                 * @type *
+                 * @type Object
                  * @notifies
+                 * @readonly
                  */
                 data: {
                     notify: true,
+                    readOnly: true,
+                    type: Object,
                     value: null
                 },
 
@@ -216,7 +219,7 @@ This element is used to create data structures on the fly.
 
             // HANDLER
             _handleData: function () {
-                this.data = (this.instance && this.instance.data) || null;
+                this._setData((this.instance && this.instance.data) || null);
             }
         });
     </script>
