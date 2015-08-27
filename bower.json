@@ -21,7 +21,7 @@
   ],
   "dependencies": {
     "expandjs": "ExpandJS/expandjs#0.9.8",
-    "xp-array-behavior": "ExpandJS/xp-array-behavior#0.9.8",
+    "xp-shared-behavior": "ExpandJS/xp-shared-behavior#0.9.8",
     "polymer": "Polymer/polymer#^1.1.0"
   }
 }
