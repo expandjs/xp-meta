@@ -7,25 +7,25 @@ The complete set of contributors may be found at https://expandjs.github.io/CONT
 -->
 
 <!--
-This element is used to create data structures on the fly.
+This element is used to create sharable data structures on the fly.
 
 @element xp-meta
-@description A custom element used to create data structures on the fly
+@description A custom element used to create sharable data structures on the fly
 @keywords web app, html5, expandjs, web-components
 @group functionality
 @homepage http://expandjs.com/elements/xp-meta
 @repository https://github.com/ExpandJS/xp-meta
 
-@behavior xp-array-behavior /bower_components/xp-array-behavior/xp-array-behavior.html
+@behavior xp-shared-behavior /bower_components/xp-shared-behavior/xp-shared-behavior.html
 
 @dependency polymer Polymer/polymer#^1.1.0
 @dependency expandjs ExpandJS/expandjs#0.9.8
-@dependency xp-array-behavior ExpandJS/xp-array-behavior#0.9.8
+@dependency xp-shared-behavior ExpandJS/xp-shared-behavior#0.9.8
 -->
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-shared-behavior/xp-shared-behavior.html">
 
 <dom-module id="xp-meta">
 
@@ -49,46 +49,8 @@ This element is used to create data structures on the fly.
 
             // BEHAVIORS
             behaviors: [
-                Polymer.XPArrayBehavior
+                Polymer.XPSharedBehavior
             ],
-
-            /*********************************************************************/
-
-            /**
-             * Returns a meta instance.
-             *
-             * @method findInstance
-             * @param {string} [name = ""]
-             * @param {string} [type = "default"]
-             * @returns {Element}
-             */
-            findInstance: function (name, type) {
-                XP.assertArgument(XP.isVoid(name) || XP.isString(name), 1, 'string');
-                XP.assertArgument(XP.isVoid(type) || XP.isString(type), 2, 'string');
-                return (name && XP.find(this.instances[type || 'default'] || [], function (instance) { return name === instance.name; })) || null;
-            },
-
-            /*********************************************************************/
-
-            /**
-             * Parses the properties.
-             *
-             * @method _parse
-             * @returns {Element}
-             * @private
-             */
-            _parse: function () {
-
-                // Vars
-                var self  = this,
-                    props = self.name ? XP.getDistributedElements(Polymer.dom(self.$.content), 'property[name]:not([name=""])') : null,
-                    data  = self.data = props ? {} : self.data;
-
-                // Parsing
-                XP.forEach(props || [], function (prop) { self.set('data.' + prop.getAttribute('name'), XP.toValue(prop.getAttribute('value'))); });
-
-                return self;
-            },
 
             /*********************************************************************/
 
@@ -107,122 +69,42 @@ This element is used to create data structures on the fly.
                     notify: true,
                     readOnly: true,
                     type: Object,
-                    value: null
+                    value: function () { return {}; }
                 },
 
                 /**
-                 * The referred instance.
-                 *
-                 * @attribute instance
-                 * @type Element
-                 * @notifies
-                 */
-                instance: {
-                    computed: '_computeInstance(name, refers, type)',
-                    notify: true,
-                    observer: '_instanceChanged'
-                },
-
-                /**
-                 * The meta's name.
+                 * The key used to share element's data.
                  *
                  * @attribute name
                  * @type string
                  */
                 name: {
-                    observer: '_nameChanged',
                     reflectToAttribute: true,
                     type: String,
                     value: null
-                },
-
-                /**
-                 * The referred instance's name.
-                 *
-                 * @attribute refers
-                 * @type string
-                 */
-                refers: {
-                    reflectToAttribute: true,
-                    type: String,
-                    value: null
-                },
-
-                /**
-                 * The meta's type, aka namespace.
-                 *
-                 * @attribute type
-                 * @type string
-                 * @default "default"
-                 */
-                type: {
-                    reflectToAttribute: true,
-                    type: String,
-                    value: 'default'
                 }
-            },
-
-            /**
-             * The list of instances.
-             *
-             * @property instances
-             * @type Object
-             * @default {default: []}
-             * @readonly
-             */
-            instances: {default: []},
-
-            /*********************************************************************/
-
-            // COMPUTER
-            _computeInstance: function (name, refers, type) {
-                return (!name && this.findInstance(refers, type)) || null;
-            },
-
-            /*********************************************************************/
-
-            // OBSERVER
-            _instanceChanged: function (post, pre) {
-
-                // Vars
-                var self = this;
-
-                // Checking
-                if (arguments.length < 2) { return; }
-
-                // Listening
-                if (pre) { self.unlisten(pre, 'data-changed', '_handleData'); }
-                if (post) { self.listen(post, 'data-changed', '_handleData'); }
-
-                // Handling
-                self._handleData();
-            },
-
-            // OBSERVER
-            _nameChanged: function (post) {
-
-                // Vars
-                var self = this;
-
-                // Initializing
-                self.set('instances.' + self.type, self.instances[self.type] || []);
-
-                // Pushing
-                self[post ? 'append' : 'pull']('instances.' + self.type, self);
             },
 
             /*********************************************************************/
 
             // LISTENER
             ready: function () {
-                XP.delay(this._parse.bind(this));
-            },
 
-            /*********************************************************************/
+                // Vars
+                var self = this;
 
-            // HANDLER
-            _handleData: function () {
-                this._setData((this.instance && this.instance.data) || null);
+                // Delaying
+                XP.delay(function () {
+
+                    // Vars
+                    var props = XP.getDistributedElements(Polymer.dom(self.$.content), 'property[name]:not([name=""])');
+
+                    // Parsing
+                    props.forEach(function (prop) { self.set('data.' + prop.getAttribute('name'), XP.toValue(prop.getAttribute('value'))); });
+
+                    // Sharing
+                    if (self.name) { self.share(self.name, self.data); }
+                });
             }
         });
     </script>
