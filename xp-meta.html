@@ -73,12 +73,12 @@ This element is used to create sharable data structures on the fly.
                 },
 
                 /**
-                 * The key used to share element's data.
+                 * The path used to share element's data.
                  *
-                 * @attribute name
+                 * @attribute path
                  * @type string
                  */
-                name: {
+                path: {
                     reflectToAttribute: true,
                     type: String,
                     value: null
@@ -103,7 +103,7 @@ This element is used to create sharable data structures on the fly.
                     props.forEach(function (prop) { self.set('data.' + prop.getAttribute('name'), XP.toValue(prop.getAttribute('value'))); });
 
                     // Sharing
-                    if (self.name) { self.share(self.name, self.data); }
+                    if (self.path) { self.share(self.path, self.data); }
                 });
             }
         });
