@@ -97,10 +97,10 @@ This element is used to create sharable data structures on the fly.
                 XP.delay(function () {
 
                     // Vars
-                    var props = XP.getDistributedElements(Polymer.dom(self.$.content), 'property[name]:not([name=""])');
+                    var props = XP.getDistributedElements(Polymer.dom(self.$.content), 'property[path]:not([path=""])');
 
                     // Parsing
-                    props.forEach(function (prop) { self.set('data.' + prop.getAttribute('name'), XP.toValue(prop.getAttribute('value'))); });
+                    props.forEach(function (prop) { self.enforce('data.' + prop.getAttribute('path'), XP.toValue(prop.getAttribute('value'))); });
 
                     // Sharing
                     if (self.path) { self.share(self.path, self.data); }
