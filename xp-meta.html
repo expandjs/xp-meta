@@ -7,29 +7,33 @@ The complete set of contributors may be found at https://expandjs.github.io/CONT
 -->
 
 <!--
-This element is used to create sharable data structures on the fly.
+A custom element used to create sharable data structures on the fly.
 
 @element xp-meta
 @description A custom element used to create sharable data structures on the fly
-@keywords web app, html5, expandjs, web-components
+@keywords expandjs, web app, custom elements, web-components
 @group functionality
+
 @homepage http://expandjs.com/elements/xp-meta
 @repository https://github.com/ExpandJS/xp-meta
 
+@behavior xp-object-behavior /bower_components/xp-object-behavior/xp-object-behavior.html
 @behavior xp-shared-behavior /bower_components/xp-shared-behavior/xp-shared-behavior.html
 
-@dependency polymer Polymer/polymer#^1.1.0
-@dependency expandjs ExpandJS/expandjs#0.9.11
-@dependency xp-shared-behavior ExpandJS/xp-shared-behavior#0.9.11
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-object-behavior ExpandJS/xp-object-behavior#0.10.0
+@dependency xp-shared-behavior ExpandJS/xp-shared-behavior#0.10.0
 -->
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-object-behavior/xp-object-behavior.html">
 <link rel="import" href="../xp-shared-behavior/xp-shared-behavior.html">
 
 <dom-module id="xp-meta">
 
-    <template>
+    <template strip-whitespace>
 
         <style>
             :host {
@@ -37,7 +41,7 @@ This element is used to create sharable data structures on the fly.
             }
         </style>
 
-        <content id="content"></content>
+        <content></content>
 
     </template>
 
@@ -49,6 +53,7 @@ This element is used to create sharable data structures on the fly.
 
             // BEHAVIORS
             behaviors: [
+                Polymer.XPObjectBehavior,
                 Polymer.XPSharedBehavior
             ],
 
@@ -58,7 +63,7 @@ This element is used to create sharable data structures on the fly.
             properties: {
 
                 /**
-                 * The element's data.
+                 * The meta data.
                  *
                  * @attribute data
                  * @type Object
@@ -73,19 +78,24 @@ This element is used to create sharable data structures on the fly.
                 },
 
                 /**
-                 * The path used to share element's data.
+                 * The shared path.
                  *
                  * @attribute path
                  * @type string
                  */
                 path: {
-                    reflectToAttribute: true,
-                    type: String,
-                    value: null
+                    type: String
                 }
             },
 
             /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('meta');
+            },
 
             // LISTENER
             ready: function () {
@@ -97,7 +107,7 @@ This element is used to create sharable data structures on the fly.
                 XP.delay(function () {
 
                     // Vars
-                    var props = XP.getDistributedElements(Polymer.dom(self.$.content), 'property[path]:not([path=""])');
+                    var props = XP.findElements(Polymer.dom(self), 'property[path]:not([path=""])');
 
                     // Parsing
                     props.forEach(function (prop) { self.enforce('data.' + prop.getAttribute('path'), XP.toValue(prop.getAttribute('value'))); });
