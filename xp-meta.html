@@ -98,23 +98,31 @@ A custom element used to create sharable data structures on the fly.
             },
 
             // LISTENER
-            ready: function () {
+            mutated: function () {
 
                 // Vars
                 var self = this;
 
-                // Delaying
-                XP.delay(function () {
+                // Parsing
+                XP.findElements(Polymer.dom(self), 'property[path]:not([path=""])').forEach(function (property) {
 
                     // Vars
-                    var props = XP.findElements(Polymer.dom(self), 'property[path]:not([path=""])');
+                    var path  = property.getAttribute('path'),
+                        value = XP.toValue(property.getAttribute('value'));
 
-                    // Parsing
-                    props.forEach(function (prop) { self.enforce('data.' + prop.getAttribute('path'), XP.toValue(prop.getAttribute('value'))); });
+                    // Setting
+                    self.enforce('data.' + path, value);
 
                     // Sharing
-                    if (self.path) { self.share(self.path, self.data); }
+                    if (self.path) { self.share(self.path + '.' + path, value); }
                 });
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Observing
+                Polymer.dom(this).observeNodes(this.mutated.bind(this));
             }
         });
     </script>
